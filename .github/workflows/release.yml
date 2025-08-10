@@ -1,0 +1,112 @@
+name: notarize and create release
+
+on:
+  push:
+    branches:
+      - main  # or your default branch
+    tags:
+      - '*'
+
+jobs:
+  notarize-macos:
+    if: contains(github.ref, 'refs/tags/')  # only run on tags
+    runs-on: macos-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # Checkout the repo to access uploaded binaries
+          fetch-depth: 0
+
+      - name: Replace team id placeholder in code-signing/gon-sign.json
+        run: |
+          sed -i '' "s/<APPLE_TEAM_ID>/${{ secrets.APPLE_TEAM_ID }}/g" code-signing/gon-sign.json
+
+      - name: Install latest gon for notarization
+        run: |
+          brew uninstall gon || true
+          brew install Bearer/tap/gon
+
+      - name: Import Code-Signing Certificates for macOS
+        uses: Apple-Actions/import-codesign-certs@v3
+        with:
+          p12-file-base64: "${{ secrets.APPLE_DEVELOPER_CERTIFICATE_P12_BASE64 }}"
+          p12-password: ${{ secrets.APPLE_DEVELOPER_CERTIFICATE_PASSWORD }}
+
+      - name: Sign our macOS binary (optional if already signed in private repo)
+        run: echo "Skipped, signed in private repo"
+
+      - name: Notarize macOS binary
+        env:
+          AC_USERNAME: ${{ secrets.APPLE_ID_USERNAME }}
+          AC_PASSWORD: ${{ secrets.APPLE_ID_APP_SPECIFIC_PASSWORD }}
+          AC_PROVIDER: ${{ secrets.APPLE_TEAM_ID }}
+        run: |
+          gon -log-level=info gon-sign.json
+
+      - name: Rename macOS Release Asset
+        run: |
+          mv build/macos/HushCut-macOS.zip HushCut-${{ github.ref_name }}-macos.zip
+
+  rename-zips:
+    if: contains(github.ref, 'refs/tags/')  # only run on tags
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # Checkout the repo to access uploaded binaries
+          fetch-depth: 0
+
+      - name: Rename Windows Release Asset
+        run: |
+          mv build/windows/HushCut-windows.zip build/windows/HushCut-${{ github.ref_name }}-windows.zip
+
+      - name: Rename Linux Release Asset
+        run: |
+          mv build/linux/HushCut-linux.zip build/linux/HushCut-${{ github.ref_name }}-linux.zip
+
+  upload-macos:
+    needs: notarize-macos
+    runs-on: macos-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Upload macOS release asset
+        uses: softprops/action-gh-release@v2.3.2
+        with:
+          files: build/macos/HushCut-${{ github.ref_name }}-macos.zip
+
+  upload-linux:
+    needs: rename-zips
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Upload Linux release asset
+        uses: softprops/action-gh-release@v2.3.2
+        with:
+          files: build/linux/HushCut-${{ github.ref_name }}-linux.zip
+
+  upload-windows:
+    needs: rename-zips
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Upload Windows release asset
+        uses: softprops/action-gh-release@v2.3.2
+        with:
+          files: build/windows/HushCut-${{ github.ref_name }}-windows.zip
