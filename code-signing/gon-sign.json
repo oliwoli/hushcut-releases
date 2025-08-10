@@ -1,13 +1,7 @@
 {
-  "source": [
-    "./build/macos/HushCut.app"
-  ],
-  "bundle_id": "app.hushcut",
-  "zip": {
-    "output_path": "./build/macos/HushCut-macOS.zip"
-  },
   "notarize": {
     "path": "./build/macos/HushCut-macOS.zip",
-    "bundle_id": "app.hushcut"
+    "bundle_id": "app.hushcut",
+    "staple": true
   }
 }
