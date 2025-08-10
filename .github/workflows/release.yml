@@ -2,8 +2,6 @@ name: notarize and create release
 
 on:
   push:
-    branches:
-      - main  # or your default branch
     tags:
       - '*'
 
