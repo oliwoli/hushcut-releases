@@ -16,6 +16,11 @@ jobs:
         with:
           # Checkout the repo to access uploaded binaries
           fetch-depth: 0
+      - run: touch .notarization_uuid.json
+      - uses: actions/cache@v4
+        with:
+          path: .notarization_uuid.json
+          key: notarization-cache
 
       - name: Replace team id placeholder in code-signing/gon-sign.json
         run: |
@@ -37,17 +42,13 @@ jobs:
 
       - name: Notarize macOS binary
         env:
-          AC_USERNAME: ${{ secrets.APPLE_ID_USERNAME }}
-          AC_PASSWORD: ${{ secrets.APPLE_ID_APP_SPECIFIC_PASSWORD }}
-          AC_PROVIDER: ${{ secrets.APPLE_TEAM_ID }}
-          AC_APPLICATION_IDENTITY: ${{ secrets.APPLE_APPLICATION_IDENTITY }}
+          APPLE_ID: ${{ secrets.APPLE_ID_USERNAME }}
+          APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_ID_APP_SPECIFIC_PASSWORD }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          DMG_PATH: build/macos/HushCut-macOS.zip
         run: |
-          gon -log-level=info ./code-signing/gon-sign.json
-
-      - name: Rename macOS Release Asset
-        run: |
-          mv build/macos/HushCut-macOS.zip HushCut-${{ github.ref_name }}-macos.zip
-
+          bash ./scripts/notarize-reuse.sh
+      
   upload-macos:
     needs: notarize-macos
     runs-on: macos-latest
@@ -57,6 +58,9 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+      - name: Rename macOS Release Asset
+        run: |
+          mv build/macos/HushCut-macOS.zip HushCut-${{ github.ref_name }}-macos.zip
 
       - name: Upload macOS release asset
         uses: softprops/action-gh-release@v2.3.2
