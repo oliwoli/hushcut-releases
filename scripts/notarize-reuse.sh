@@ -81,6 +81,15 @@ while :; do
             echo "❌ Notarization failed. Fetching log..."
             echo "$INFO_JSON" > notarization-log.json
             cat notarization-log.json
+
+            # log the complete notarization log
+            xcrun notarytool log "$UUID" \
+                --apple-id "$APPLE_ID" \
+                --team-id "$APPLE_TEAM_ID" \
+                --password "$APPLE_APP_SPECIFIC_PASSWORD" \
+                --output-format json > notarization-log.json
+            cat notarization-log.json
+
             exit 1
             ;;
         In\ Progress)
