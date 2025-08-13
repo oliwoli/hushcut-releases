@@ -70,6 +70,10 @@ while :; do
             echo "✅ Notarization complete. Fetching log..."
             echo "$INFO_JSON" > notarization-log.json
             cat notarization-log.json
+            echo " stapling notarization ticket to $DMG_PATH..."
+            xcrun stapler staple "$DMG_PATH"
+            echo " Stapling complete."
+
             rm -f "$UUID_FILE" # clear cache so we don't reuse an old UUID
             exit 0
             ;;

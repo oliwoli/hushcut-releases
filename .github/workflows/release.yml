@@ -45,16 +45,16 @@ jobs:
           APPLE_ID: ${{ secrets.APPLE_ID_USERNAME }}
           APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_ID_APP_SPECIFIC_PASSWORD }}
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
-          DMG_PATH: build/macos/HushCut-macOS.zip
+          DMG_PATH: build/macos/HushCut-macOS.dmg
         run: |
           bash ./scripts/notarize-reuse.sh
       - name: Rename macOS Release Asset
         run: |
-          mv build/macos/HushCut-macOS.zip build/macos/HushCut-${{ github.ref_name }}-macos.zip
+          mv build/macos/HushCut-macOS.dmg build/macos/HushCut-${{ github.ref_name }}-macos.dmg
       - name: Upload macOS release asset
         uses: softprops/action-gh-release@v2.3.2
         with:
-          files: build/macos/HushCut-${{ github.ref_name }}-macos.zip
+          files: build/macos/HushCut-${{ github.ref_name }}-macos.dmg
       
   upload-linux:
     runs-on: ubuntu-latest
