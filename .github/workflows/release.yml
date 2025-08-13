@@ -6,7 +6,7 @@ on:
       - '*'
 
 jobs:
-  notarize-macos:
+  notarize-and-upload-macos:
     if: contains(github.ref, 'refs/tags/')  # only run on tags
     runs-on: macos-latest
     permissions:
@@ -48,25 +48,14 @@ jobs:
           DMG_PATH: build/macos/HushCut-macOS.zip
         run: |
           bash ./scripts/notarize-reuse.sh
-      
-  upload-macos:
-    needs: notarize-macos
-    runs-on: macos-latest
-    permissions:
-      contents: write
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
       - name: Rename macOS Release Asset
         run: |
-          mv build/macos/HushCut-macOS.zip HushCut-${{ github.ref_name }}-macos.zip
-
+          mv build/macos/HushCut-macOS.zip build/macos/HushCut-${{ github.ref_name }}-macos.zip
       - name: Upload macOS release asset
         uses: softprops/action-gh-release@v2.3.2
         with:
           files: build/macos/HushCut-${{ github.ref_name }}-macos.zip
-
+      
   upload-linux:
     runs-on: ubuntu-latest
     permissions:
