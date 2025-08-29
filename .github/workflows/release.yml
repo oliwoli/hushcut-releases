@@ -6,8 +6,21 @@ on:
       - '*'
 
 jobs:
+  create-release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: softprops/action-gh-release@v2.3.2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: Release ${{ github.ref_name }}
+          body: "Automated release"
+          draft: false
+
   notarize-and-upload-macos:
-    if: contains(github.ref, 'refs/tags/')  # only run on tags
+    needs: create-release
     runs-on: macos-latest
     permissions:
       contents: write
@@ -54,9 +67,11 @@ jobs:
       - name: Upload macOS release asset
         uses: softprops/action-gh-release@v2.3.2
         with:
+          tag_name: ${{ github.ref_name }}
           files: build/macos/HushCut-${{ github.ref_name }}-macos.dmg
-      
+    
   upload-linux:
+    needs: create-release
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -70,9 +85,11 @@ jobs:
       - name: Upload Linux release asset
         uses: softprops/action-gh-release@v2.3.2
         with:
+          tag_name: ${{ github.ref_name }}
           files: build/linux/HushCut-${{ github.ref_name }}-linux.zip
 
   upload-windows:
+    needs: create-release
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -83,9 +100,10 @@ jobs:
 
       - name: Rename Windows Release Asset
         run: |
-          mv build/windows/HushCut-windows.zip build/windows/HushCut-${{ github.ref_name }}-windows.zip
+          mv build/windows/HushCut-amd64-installer.exe build/windows/HushCut-${{ github.ref_name }}-windows.exe
 
       - name: Upload Windows release asset
         uses: softprops/action-gh-release@v2.3.2
         with:
-          files: build/windows/HushCut-${{ github.ref_name }}-windows.zip
+          tag_name: ${{ github.ref_name }}
+          files: build/windows/HushCut-${{ github.ref_name }}-windows.exe
