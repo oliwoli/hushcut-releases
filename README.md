@@ -1,7 +1,7 @@
 # HushCut - A DaVinci Resolve Plugin
 Remove Silences from Videos, Compound Clips, Multicam Clips at Lightspeed!
 
-Important: This app is still in development. The binaries haven't been signed, meaning you will most likely get a security warning on macOS and Windows!
+Important: This app is still in development. The windows binaries haven't been signed, meaning you will most likely get a security warning! (MacOS and Linux are fine)
 
 Get a License from the official store: [gethushcut.com](https://gethushcut.com)
 
