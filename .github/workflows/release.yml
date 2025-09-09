@@ -100,10 +100,10 @@ jobs:
 
       - name: Rename Windows Release Asset
         run: |
-          mv build/windows/HushCut-windows.zip build/windows/HushCut-${{ github.ref_name }}-windows.zip
+          mv build/windows/HushCut-amd64-installer.exe build/windows/HushCut-${{ github.ref_name }}-windows.exe
 
       - name: Upload Windows release asset
         uses: softprops/action-gh-release@v2.3.2
         with:
           tag_name: ${{ github.ref_name }}
-          files: build/windows/HushCut-${{ github.ref_name }}-windows.zip
+          files: build/windows/HushCut-${{ github.ref_name }}-windows.exe
